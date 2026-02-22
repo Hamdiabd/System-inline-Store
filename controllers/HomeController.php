@@ -6,6 +6,7 @@ class HomeController extends Controller {
             'title' => 'الرئيسية',
             'welcome' => 'مرحباً بك في موقع MVC'
         ];
+        
         $this->view('home/index', $data);
     }
 

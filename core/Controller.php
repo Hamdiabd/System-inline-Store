@@ -10,19 +10,32 @@ class Controller {
         die("الموديل $model غير موجود");
     }
 
-protected function view($view, $data = []) {
-    $viewPath = APP_PATH . 'views/' . $view . '.php';
-    if(file_exists($viewPath)) {
-        extract($data);
-        $view_file = $viewPath; // هذا المتغير سيستخدم في main.php
-        require APP_PATH . 'views/layouts/main.php';
-    } else {
-        die("الملف $view غير موجود");
+    protected function view($view, $data = []) {
+        $viewPath = APP_PATH . 'views/' . $view . '.php';
+        if(file_exists($viewPath)) {
+            extract($data);
+            include APP_PATH.'views/layouts/main.php';
+    
+        } else {
+            die("الملف $view غير موجود");
+        }
     }
-}
 
     protected function redirect($url) {
         header('Location: ' . BASE_URL . $url);
         exit();
-    }
+        }
+        protected function post($key ,$default=null) {
+            return isset($_POST[$key]) ? trim($_POST[$key]) : $default;
+        }
+        protected function get($key ,$default=null) {
+            return isset($_GET[$key]) ? trim($_GET[$key]) : $default;
+        }
+        protected function isPost() {
+            return $_SERVER['REQUEST_METHOD'] =='POST';
+        }
+        protected function isGet() {
+            return $_SERVER['REQUEST_METHOD'] =='GET';
+        }
+
 }

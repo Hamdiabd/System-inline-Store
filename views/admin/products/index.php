@@ -1,6 +1,4 @@
 <?php
-
-
 // استقبال المتغيرات من الكنترولر
 $products = $data['products'] ?? [];
 $totalProducts = $data['totalProducts'] ?? 0;
@@ -19,7 +17,7 @@ $page = $data['page'] ?? '';
             <?= htmlspecialchars($title) ?>
         </h1>
         <div class="header-actions">
-            <a href="<?= BASE_URL ?>product/create" class="btn-primary">
+            <a href="<?= BASE_URL ?>admin/product/create" class="btn-primary">
                 <i class="fas fa-plus-circle"></i>
                 إضافة منتج جديد
             </a>
@@ -54,7 +52,7 @@ $page = $data['page'] ?? '';
             </div>
             <div class="stat-info">
                 <h3>منخفض المخزون</h3>
-                <p><?= intval($lowStock) ?></p>
+                <p><?= $lowStock ?></p>
             </div>
         </div>
         
@@ -64,7 +62,7 @@ $page = $data['page'] ?? '';
             </div>
             <div class="stat-info">
                 <h3>نافد من المخزون</h3>
-                <p><?= intval($outOfStock) ?></p>
+                <p><?= $outOfStock ?></p>
             </div>
         </div>
     </div>
@@ -134,7 +132,7 @@ $page = $data['page'] ?? '';
                     <td colspan="7" class="empty-table">
                         <i class="fas fa-box-open"></i>
                         <p>لا توجد منتجات</p>
-                        <a href="<?= BASE_URL ?>product/create" class="btn-small">إضافة منتج</a>
+                        <a href="<?= BASE_URL ?>admin/product/create" class="btn-small">إضافة منتج</a>
                     </td>
                 </tr>
             <?php else: ?>
@@ -181,7 +179,7 @@ $page = $data['page'] ?? '';
                     </td>
                     
                     <td class="actions">
-                        <a href="<?= BASE_URL ?>product/edit/<?= $product->id ?>" 
+                        <a href="<?= BASE_URL ?>admin/product/edit/<?= $product->id ?>" 
                            class="btn-action btn-edit" 
                            title="تعديل">
                             <i class="fas fa-edit"></i>
@@ -199,7 +197,7 @@ $page = $data['page'] ?? '';
                             <i class="fas fa-trash"></i>
                         </button>
                         
-                        <a href="<?= BASE_URL ?>/../product/view/<?= $product->id ?>" 
+                        <a href="<?= BASE_URL ?>admin/product/view/<?= $product->id ?>" 
                            class="btn-action btn-view" 
                            title="عرض">
                             <i class="fas fa-eye"></i>
@@ -280,7 +278,7 @@ function confirmDelete(id, name) {
             // إنشاء نموذج وإرسال POST
             const form = document.createElement('form');
             form.method = 'POST';
-            form.action = '<?= BASE_URL ?>product/delete/' + id;
+            form.action = '<?= BASE_URL ?>admin/product/delete/' + id;
             document.body.appendChild(form);
             form.submit();
         }

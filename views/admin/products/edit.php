@@ -11,13 +11,13 @@ $images = $data['images'];
             <i class="fas fa-edit"></i>
             تعديل المنتج: <?= htmlspecialchars($product->name) ?>
         </h2>
-        <a href="<?= BASE_URL ?>/product/index" class="btn-secondary">
+        <a href="<?= BASE_URL ?>admin/product/index" class="btn-secondary">
             <i class="fas fa-arrow-right"></i>
             عودة
         </a>
     </div>
     
-    <form action="<?= BASE_URL ?>product/update/<?= $product->id ?>"
+    <form action="<?= BASE_URL ?>admin/product/update/<?= $product->id ?>" 
           method="POST" 
           enctype="multipart/form-data"
           class="product-form">
@@ -182,7 +182,7 @@ function confirmDelete(id, name) {
         cancelButtonText: 'إلغاء'
     }).then((result) => {
         if (result.isConfirmed) {
-            window.location.href = '<?= BASE_URL ?>/product/delete/' + id;
+            window.location.href = '<?= BASE_URL ?>admin/product/delete/' + id;
         }
     });
 }

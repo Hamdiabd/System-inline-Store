@@ -17,9 +17,5 @@ class Model {
         return $this->db->single();
     }
 
-    protected function delete($table, $id) {
-        $this->db->query("DELETE FROM $table WHERE id = :id");
-        $this->db->bind(':id', $id);
-        return $this->db->execute();
-    }
+ 
 }

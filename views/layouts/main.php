@@ -1,28 +1,35 @@
+<?php require_once APP_PATH .'views/layouts/header.php';?>
+<?php require_once APP_PATH .'views/layouts/sidebar.php';?>
 
-<?php require_once APP_PATH."views/layouts/header.php"; ?>
     <div class="app-container">
-        
-<?php require_once APP_PATH."views/layouts/sidebar.php"; ?>
 
-        <main class="main-content">
-            <div class="content-header">
-                <h1><?= $title ?? 'لوحة التحكم' ?></h1>
-                <?php if(isset($breadcrumb)): ?>
-                <div class="breadcrumb">
-                    <?= $breadcrumb ?>
+        <main class="main-content" id="mainContent">
+            <div class="content-wrapper">
+                <div class="content-padding">
+                    <?php if(isset($viewPath) && file_exists($viewPath)): ?>
+                        <?php include $viewPath; ?>
+                    <?php else: ?>
+                        <div class="error-container">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <h2>عذراً، الصفحة المطلوبة غير موجودة</h2>
+                        </div>
+                    <?php endif; ?>
                 </div>
-                <?php endif; ?>
-            </div>
-            
-            <div class="content-body">
-                <?php require $view_file; ?>
             </div>
         </main>
+<?php require_once APP_PATH .'views/layouts/footer.php';?>
+
     </div>
 
-    <script src="<?= BASE_URL ?>js/main.js"></script>
-    <script>
-        const BASE_URL = '<?= BASE_URL ?>';
-    </script>
-</body>
-</html>
+
+
+
+
+
+
+
+
+
+
+
+

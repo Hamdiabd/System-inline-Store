@@ -51,4 +51,20 @@ class Database {
     public function rowCount() {
         return $this->stmt->rowCount();
     }
+    public function lastInsertId()
+    {
+        return $this->pdo->lastInsertId();
+    }
+    public function rollBack()
+    {
+        return $this->pdo->rollBack();
+    }
+    public function commit()
+    {
+        return $this->pdo->commit();
+    }
+    public function beginTransaction()
+    {
+        return $this->pdo->beginTransaction();
+    }
 }
