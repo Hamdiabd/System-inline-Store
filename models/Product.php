@@ -1,7 +1,12 @@
 <?php
 class Product extends Model {
     protected $table = 'products';
-    
+    public function incrementViews($id) {
+    $this->db->query("UPDATE {$this->table} SET `views` = `views` + 1 WHERE `id` = :id");
+    $this->db->bind(':id', $id);
+    return $this->db->execute();
+}
+
     public function getAllForAdmin() {
         $this->db->query("SELECT 
             p.*,
@@ -16,7 +21,24 @@ class Product extends Model {
         
         return $this->db->resultSet();
     }
-    
+    public function delete($id) {
+    try {
+        $this->db->beginTransaction();
+        
+        $this->db->query("DELETE FROM `product_images` WHERE `product_id` = :product_id");
+        $this->db->bind(':product_id', $id);
+        $this->db->execute();
+        $this->db->query("DELETE FROM {$this->table} WHERE `id` = :id");
+        $this->db->bind(':id', $id);
+        $result = $this->db->execute();
+        $this->db->commit();
+        return $result;
+    } catch (Exception $e) {
+        $this->db->rollBack();
+        error_log("خطأ في حذف المنتج: " . $e->getMessage());
+        return false;
+    }
+}
     /**
      * جلب منتج واحد مع كل التفاصيل
      */
@@ -38,29 +60,20 @@ public function getProductById($id) {
 }
         public function create($data) {
         try {
-            // بدء معاملة قاعدة البيانات
             $this->db->beginTransaction();
-            
-            // إنشاء slug من الاسم
             $slug = $this->createSlug($data['name']);
-            
-            // التأكد من عدم تكرار slug
             $originalSlug = $slug;
             $counter = 1;
             while($this->slugExists($slug)) {
                 $slug = $originalSlug . '-' . $counter;
                 $counter++;
             }
-            
-            // إدخال المنتج
             $sql = "INSERT INTO {$this->table} 
                     (`name`, `slug`, `price`, `category_id`, `brand_id`, `stock`, `description`, `main_image`, `featured`, `status`, `created_at`) 
                     VALUES 
                     (:name, :slug, :price, :category_id, :brand_id, :stock, :description, :main_image, :featured, :status, NOW())";
             
             $this->db->query($sql);
-            
-            // ربط القيم
             $this->db->bind(':name', $data['name']);
             $this->db->bind(':slug', $slug);
             $this->db->bind(':price', $data['price']);
@@ -74,8 +87,6 @@ public function getProductById($id) {
             
             if($this->db->execute()) {
                 $productId = $this->db->lastInsertId();
-                
-                // إضافة الصورة إلى جدول الصور إذا لم تكن افتراضية
                 if($data['main_image'] != 'default.jpg') {
                     $sql = "INSERT INTO `product_images` (`product_id`, `image`, `is_primary`, `sort_order`) 
                             VALUES (:product_id, :image, 1, 0)";
@@ -85,13 +96,9 @@ public function getProductById($id) {
                     $this->db->bind(':image', $data['main_image']);
                     $this->db->execute();
                 }
-                
-                // تأكيد المعاملة
                 $this->db->commit();
                 return $productId;
             }
-            
-            // فشل الإدخال
             $this->db->rollBack();
             return false;
             
@@ -100,12 +107,7 @@ public function getProductById($id) {
             error_log("خطأ في إنشاء المنتج: " . $e->getMessage());
             return false;
         }
-    }/**
- * تحديث منتج
- * @param int $id معرف المنتج
- * @param array $data البيانات الجديدة
- * @return bool
- */
+    }
 public function update($id, $data) {
     try {
         $this->db->beginTransaction();
@@ -123,8 +125,6 @@ public function update($id, $data) {
                 WHERE `id` = :id";
         
         $this->db->query($sql);
-        
-        // ربط القيم
         $this->db->bind(':name', $data['name']);
         $this->db->bind(':price', $data['price']);
         $this->db->bind(':category_id', $data['category_id']);
@@ -138,14 +138,10 @@ public function update($id, $data) {
         
         $result = $this->db->execute();
         
-        // تحديث الصورة في جدول الصور إذا تغيرت
         if($data['main_image'] != 'default.jpg') {
-            // حذف الصورة القديمة من جدول الصور
             $this->db->query("DELETE FROM `product_images` WHERE `product_id` = :product_id");
             $this->db->bind(':product_id', $id);
             $this->db->execute();
-            
-            // إضافة الصورة الجديدة
             $sql = "INSERT INTO `product_images` (`product_id`, `image`, `is_primary`, `sort_order`) 
                     VALUES (:product_id, :image, 1, 0)";
             $this->db->query($sql);
@@ -260,34 +256,7 @@ public function getProductImages($productId) {
         return $this->db->resultSet();
     }
 
-/**
- * حذف منتج
- * @param int $id معرف المنتج
- * @return bool
- */
-public function delete($id) {
-    try {
-        $this->db->beginTransaction();
-        
-        // 1️⃣ حذف الصور المرتبطة من جدول product_images
-        $this->db->query("DELETE FROM `product_images` WHERE `product_id` = :product_id");
-        $this->db->bind(':product_id', $id);
-        $this->db->execute();
-        
-        // 2️⃣ حذف المنتج من جدول products
-        $this->db->query("DELETE FROM {$this->table} WHERE `id` = :id");
-        $this->db->bind(':id', $id);
-        $result = $this->db->execute();
-        
-        $this->db->commit();
-        return $result;
-        
-    } catch (Exception $e) {
-        $this->db->rollBack();
-        error_log("خطأ في حذف المنتج: " . $e->getMessage());
-        return false;
-    }
-}
+
 public function updateStatus($id, $status) {
     $this->db->query("UPDATE {$this->table} SET `status` = :status WHERE `id` = :id");
     $this->db->bind(':status', $status);

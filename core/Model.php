@@ -1,6 +1,7 @@
 <?php
 class Model {
     protected $db;
+    protected $table;
 
     public function __construct() {
         $this->db = new Database();
@@ -16,6 +17,6 @@ class Model {
         $this->db->bind(':id', $id);
         return $this->db->single();
     }
-
+    
  
 }

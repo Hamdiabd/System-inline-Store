@@ -1,5 +1,4 @@
 <?php
-
 class ProductController extends Controller {
     private $productModel;
     private $categoryModel;
@@ -11,7 +10,34 @@ class ProductController extends Controller {
         $this->categoryModel = $this->model('Category');
         $this->brandModel = $this->model('Brand');
     }
-
+public function getDetails($id) {
+    if(empty($_SERVER['HTTP_X_REQUESTED_WITH']) || strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) != 'xmlhttprequest') {
+        http_response_code(403);
+        exit;
+    }
+    
+    $product = $this->productModel->getProductById($id);
+    
+    if($product) {
+        // زيادة عدد المشاهدات
+        $this->productModel->incrementViews($id);
+        
+        // جلب الصور الإضافية
+        $images = $this->productModel->getProductImages($id);
+        $product->images = $images;
+        
+        echo json_encode([
+            'success' => true,
+            'product' => $product
+        ]);
+    } else {
+        echo json_encode([
+            'success' => false,
+            'message' => 'المنتج غير موجود'
+        ]);
+    }
+    exit;
+}
     public function index() {
         $products = $this->productModel->getAllForAdmin();
         $count = $this->brandModel->getProductCount(5);
@@ -42,6 +68,10 @@ class ProductController extends Controller {
         
         $this->view('product/show', $data);
     }
+    /**
+ * حذف منتج
+ * @param int $id معرف المنتج
+ */
 public function delete($id) {
     // التحقق من وجود المنتج
     $product = $this->productModel->getProductById($id);
@@ -52,19 +82,15 @@ public function delete($id) {
         return;
     }
     
-    // =============================================
     // حذف الصورة من السيرفر
-    // =============================================
     if($product->main_image && $product->main_image != 'default.jpg') {
-        $imagePath = $_SERVER['DOCUMENT_ROOT'] . '/app/app/public/uploads/products/' . $product->main_image;
+        $imagePath = ROOT_PATH.'public/uploads/products/' . $product->main_image;
         if(file_exists($imagePath)) {
-            unlink($imagePath); // حذف الملف
+            unlink($imagePath);
         }
     }
     
-    // =============================================
     // حذف من قاعدة البيانات
-    // =============================================
     if($this->productModel->delete($id)) {
         $_SESSION['success'] = 'تم حذف المنتج بنجاح';
     } else {
@@ -73,6 +99,33 @@ public function delete($id) {
     
     $this->redirect('product/index');
 }
+
+// تغيير الحالة (AJAX)
+public function toggleStatus($id) {
+    if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+        $product = $this->productModel->getProductById($id);
+        if($product) {
+            $newStatus = ($product->status == 'active') ? 'inactive' : 'active';
+            if($this->productModel->updateStatus($id, $newStatus)) {
+                echo json_encode(['success' => true, 'newStatus' => $newStatus]);
+                exit;
+            }
+        }
+    }
+    echo json_encode(['success' => false]);
+    exit;
+}
+
+// نسخ المنتج
+public function duplicate($id) {
+    if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+        $newId = $this->productModel->duplicate($id);
+        echo json_encode(['success' => $newId ? true : false, 'id' => $newId]);
+        exit;
+    }
+}
+
+
     public function category($categoryId) {
         $products = $this->productModel->getByCategory($categoryId);
         $data = [
@@ -184,16 +237,12 @@ public function delete($id) {
             
             // إنشاء اسم فريد للصورة (آمن)
             $imageName = time() . '_' . uniqid() . '.' . $extension;
-            
-            // مسار رفع الصورة (للهاتف)
-            $uploadDir = $_SERVER['DOCUMENT_ROOT'] . '/mvc/App/public/uploads/products/';
+            $uploadDir = ROOT_PATH.'public/uploads/products/';
             
             // إنشاء المجلد إذا لم يكن موجوداً
             if(!is_dir($uploadDir)) {
                 mkdir($uploadDir, 0777, true);
             }
-            
-            // التأكد من أن المجلد قابل للكتابة
             if(!is_writable($uploadDir)) {
                 error_log("مجلد الرفع غير قابل للكتابة: " . $uploadDir);
                 $_SESSION['errors']['image'] = 'خطأ في نظام الملفات';
@@ -201,10 +250,7 @@ public function delete($id) {
                 $this->redirect('product/create');
                 return;
             }
-            
             $uploadPath = $uploadDir . $imageName;
-            
-            // نقل الصورة من المجلد المؤقت إلى المجلد الدائم
             if(move_uploaded_file($_FILES['main_image']['tmp_name'], $uploadPath)) {
                 $mainImage = $imageName;
                 
@@ -257,10 +303,6 @@ public function delete($id) {
         }
     }
 
-/**
- * عرض صفحة تعديل المنتج
- * @param int $id معرف المنتج
- */
 public function edit($id) {
     // جلب بيانات المنتج
     $product = $this->productModel->getProductById($id);
@@ -333,9 +375,6 @@ public function update($id) {
         return;
     }
     
-    // =============================================
-    // 2️⃣ معالجة رفع الصورة الجديدة (إذا وجدت)
-    // =============================================
     $mainImage = $product->main_image; // الصورة القديمة
     
     if(isset($_FILES['main_image']) && $_FILES['main_image']['error'] === UPLOAD_ERR_OK) {
@@ -362,7 +401,7 @@ public function update($id) {
         $imageName = time() . '_' . uniqid() . '.' . $extension;
         
         // مسار رفع الصورة
-        $uploadDir = $_SERVER['DOCUMENT_ROOT'] . '/app/app/public/uploads/products/';
+        $uploadDir = ROOT_PATH.'public/uploads/products/';
         
         if(!is_dir($uploadDir)) {
             mkdir($uploadDir, 0777, true);
@@ -409,41 +448,5 @@ public function update($id) {
         $this->redirect('product/edit/' . $id);
     }
 }
-/**
- * حذف منتج
- * @param int $id معرف المنتج
- */
-public function delete($id) {
-    // التحقق من وجود المنتج
-    $product = $this->productModel->getProductById($id);
-    
-    if(!$product) {
-        $_SESSION['error'] = 'المنتج غير موجود';
-        $this->redirect('product/index');
-        return;
-    }
-    
-    // =============================================
-    // حذف الصورة من السيرفر (إذا كانت موجودة)
-    // =============================================
-    if($product->main_image && $product->main_image != 'default.jpg') {
-        // المسار في البيئة المحلية (XAMPP)
-        $imagePath = $_SERVER['DOCUMENT_ROOT'] . '/mvc/public/uploads/products/' . $product->main_image;
-        
-        if(file_exists($imagePath)) {
-            unlink($imagePath); // حذف الملف
-        }
-    }
-    
-    // =============================================
-    // حذف من قاعدة البيانات
-    // =============================================
-    if($this->productModel->delete($id)) {
-        $_SESSION['success'] = 'تم حذف المنتج بنجاح';
-    } else {
-        $_SESSION['error'] = 'حدث خطأ في حذف المنتج';
-    }
-    
-    $this->redirect('product/index');
-}
+
     }

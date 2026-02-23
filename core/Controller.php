@@ -10,7 +10,7 @@ class Controller {
         die("الموديل $model غير موجود");
     }
 
-    protected function view($view, $data = []) {
+    public function view($view, $data = []) {
         $viewPath = APP_PATH . 'views/' . $view . '.php';
         if(file_exists($viewPath)) {
             extract($data);
