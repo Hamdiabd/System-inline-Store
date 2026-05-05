@@ -18,7 +18,6 @@ class HomeController extends Controller {
         $data = ['title' => 'خدماتنا'];
         $this->view('page/services', $data);
     }
-
     public function contact() {
         $data = ['title' => 'اتصل بنا'];
         $this->view('page/contact', $data);
