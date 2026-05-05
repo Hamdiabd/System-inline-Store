@@ -1,0 +1,12 @@
+/* images.css - تنسيق الصور العامة */
+img {
+    max-width: 100%;
+    height: auto;
+}
+.image-slogan {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: wheat; /* احتياطي */
+}

@@ -1,45 +1,48 @@
-    <!-- JavaScript -->
-    <script>
-        // تبديل القائمة الجانبية في الجوال
-        document.getElementById('menuToggle').addEventListener('click', function() {
-            document.getElementById('sidebar').classList.toggle('active');
-        });
+</main><!-- نهاية main-content -->
+</div><!-- نهاية app-container -->
 
-        // إغلاق القوائم المنسدلة عند النقر خارجها
-        window.addEventListener('click', function(e) {
-            if (!e.target.closest('.user-dropdown')) {
-                document.querySelectorAll('.user-dropdown .dropdown-content').forEach(d => {
-                    d.classList.remove('show');
-                });
-            }
-            if (!e.target.closest('.notification-dropdown')) {
-                document.querySelectorAll('.notification-dropdown .dropdown-content').forEach(d => {
-                    d.classList.remove('show');
-                });
-            }
-        });
+<!-- سكريبت بسيط للتحكم بالسايدبار على الجوال مع مراعاة الوصول -->
+<script>
+(function() {
+    const sidebar = document.getElementById('mainSidebar');
+    const toggleBtn = document.getElementById('sidebarToggle');
+    const overlay = document.getElementById('sidebarOverlay');
 
-        // فتح/إغلاق القوائم المنسدلة
-        document.querySelectorAll('.user-btn, .notification-btn').forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                this.closest('.user-dropdown, .notification-dropdown').querySelector('.dropdown-content').classList.toggle('show');
-            });
-        });
+    function openSidebar() {
+        sidebar.classList.add('open');
+        overlay.classList.add('active');
+        toggleBtn.setAttribute('aria-expanded', 'true');
+        toggleBtn.setAttribute('aria-label', 'إغلاق القائمة الجانبية');
+        // حفظ التركيز على أول عنصر قائمة للوصول
+        const firstLink = sidebar.querySelector('a');
+        if(firstLink) firstLink.focus();
+    }
 
-        // تفعيل القوائم الفرعية
-        document.querySelectorAll('.nav-item > .nav-link').forEach(link => {
-            if(link.nextElementSibling && link.nextElementSibling.classList.contains('nav-submenu')) {
-                link.addEventListener('click', function(e) {
-                    if(window.innerWidth <= 768) {
-                        e.preventDefault();
-                        this.nextElementSibling.classList.toggle('expanded');
-                    }
-                });
-            }
-        });
-    </script>
-    
-    <script src="<?= BASE_URL ?>js/main.js"></script>
+    function closeSidebar() {
+        sidebar.classList.remove('open');
+        overlay.classList.remove('active');
+        toggleBtn.setAttribute('aria-expanded', 'false');
+        toggleBtn.setAttribute('aria-label', 'فتح القائمة الجانبية');
+        toggleBtn.focus(); // إعادة التركيز للزر
+    }
+
+    toggleBtn.addEventListener('click', function() {
+        if (sidebar.classList.contains('open')) {
+            closeSidebar();
+        } else {
+            openSidebar();
+        }
+    });
+
+    overlay.addEventListener('click', closeSidebar);
+
+    // إغلاق بالسكيب من لوحة المفاتيح (Escape)
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && sidebar.classList.contains('open')) {
+            closeSidebar();
+        }
+    });
+})();
+</script>
 </body>
 </html>

@@ -1,0 +1,199 @@
+
+/* ===================================
+   product-form.css - تنسيقات نموذج المنتج
+   =================================== */
+
+/* حاوية النموذج */
+.form-wrapper {
+    max-width: 1200px;
+    margin: 0 auto;
+    background: var(--color-white);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+    padding: 30px;
+}
+
+.form-section {
+    margin-bottom: 40px;
+    border: 1px solid var(--color-light);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+}
+
+.section-title {
+    background: var(--color-lighter);
+    padding: 15px 20px;
+    font-size: 1.2rem;
+    font-weight: var(--font-weight-bold);
+    color: var(--color-dark);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid var(--color-light);
+}
+
+.section-title i {
+    color: var(--color-primary);
+    font-size: 1.3rem;
+}
+
+.section-body {
+    padding: 25px;
+}
+
+/* شبكة الحقول */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.form-grid.col-2 {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+@media (max-width: 600px) {
+    .form-grid.col-2 {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* مجموعة الحقل */
+.field-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.field-group label {
+    margin-bottom: 6px;
+    font-weight: var(--font-weight-bold);
+    color: var(--color-dark);
+    font-size: 0.95rem;
+}
+
+.field-group label .required {
+    color: var(--color-danger);
+    margin-right: 4px;
+}
+
+.field-group input,
+.field-group select,
+.field-group textarea {
+    padding: 10px 14px;
+    border: 1px solid #d1d5db;
+    border-radius: var(--border-radius-sm);
+    font-family: var(--font-family);
+    font-size: 1rem;
+    transition: border-color var(--transition-speed), box-shadow var(--transition-speed);
+    background: var(--color-white);
+}
+
+.field-group input:focus,
+.field-group select:focus,
+.field-group textarea:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+}
+
+.field-group textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+/* رفع الصور */
+.image-upload {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-top: 8px;
+}
+
+.image-preview {
+    width: 80px;
+    height: 80px;
+    border-radius: var(--border-radius);
+    background: var(--color-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: var(--color-gray);
+    overflow: hidden;
+}
+
+.image-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* تكرار العناصر (المتغيرات، الموردين، المخزون) */
+.repeat-container {
+    margin-top: 15px;
+}
+
+.repeat-item {
+    background: var(--color-lighter);
+    border-radius: var(--border-radius-sm);
+    padding: 20px;
+    margin-bottom: 15px;
+    position: relative;
+    border: 1px solid var(--color-light);
+}
+
+.repeat-item .remove-btn {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: var(--color-danger);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background var(--transition-speed);
+}
+
+.repeat-item .remove-btn:hover {
+    background: #dc2626;
+}
+
+.add-more-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: none;
+    border: 1px dashed var(--color-primary);
+    color: var(--color-primary);
+    padding: 10px 20px;
+    border-radius: var(--border-radius-sm);
+    font-weight: var(--font-weight-bold);
+    cursor: pointer;
+    transition: all var(--transition-speed);
+    margin-top: 10px;
+}
+
+.add-more-btn:hover {
+    background: rgba(79, 70, 229, 0.05);
+}
+
+/* أزرار الإرسال */
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid var(--color-light);
+}
+
+/* تحديد كل الحقول المطلوبة */
+input:required, select:required, textarea:required {
+    border-right: 3px solid var(--color-primary);
+}
