@@ -1,0 +1,291 @@
+/* ===================================
+   login.css - صفحة تسجيل الدخول
+   =================================== */
+
+/* حاوية الصفحة بالكامل */
+.login-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 50%, #1e293b 100%);
+    position: relative;
+    overflow: hidden;
+    padding: 20px;
+}
+
+/* أشكال زخرفية خلفية */
+.login-page::before {
+    content: '';
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    background: rgba(79, 70, 229, 0.15);
+    border-radius: 50%;
+    top: -200px;
+    right: -200px;
+    z-index: 0;
+}
+.login-page::after {
+    content: '';
+    position: absolute;
+    width: 400px;
+    height: 400px;
+    background: rgba(14, 165, 233, 0.1);
+    border-radius: 50%;
+    bottom: -150px;
+    left: -150px;
+    z-index: 0;
+}
+
+/* بطاقة تسجيل الدخول - تأثير زجاجي */
+.login-card {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 24px;
+    padding: 50px 40px;
+    width: 100%;
+    max-width: 440px;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+    position: relative;
+    z-index: 1;
+    animation: fadeInUp 0.6s ease;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* الشعار والعنوان */
+.login-header {
+    text-align: center;
+    margin-bottom: 35px;
+}
+
+.login-logo {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    font-size: 2.5rem;
+    color: white;
+    box-shadow: 0 8px 20px rgba(79, 70, 229, 0.4);
+}
+
+.login-title {
+    color: white;
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 5px;
+}
+
+.login-subtitle {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.95rem;
+}
+
+/* مجموعة حقول الإدخال */
+.input-group {
+    margin-bottom: 20px;
+    position: relative;
+}
+
+.input-group .input-icon {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 1.1rem;
+    transition: color var(--transition-speed);
+}
+
+.input-group input {
+    width: 100%;
+    padding: 14px 45px 14px 15px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    color: white;
+    font-family: var(--font-family);
+    font-size: 1rem;
+    transition: all var(--transition-speed);
+    outline: none;
+}
+
+.input-group input::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.input-group input:focus {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+}
+
+.input-group input:focus + .input-icon,
+.input-group input:focus ~ .input-icon {
+    color: var(--color-primary);
+}
+
+/* خيارات إضافية (تذكرني - نسيت كلمة المرور) */
+.login-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9rem;
+}
+
+.remember-me {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.remember-me input[type="checkbox"] {
+    accent-color: var(--color-primary);
+    width: 16px;
+    height: 16px;
+}
+
+.forgot-link {
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    transition: color var(--transition-speed);
+}
+
+.forgot-link:hover {
+    color: var(--color-secondary);
+}
+
+/* زر تسجيل الدخول الرئيسي */
+.btn-login {
+    width: 100%;
+    padding: 14px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--color-primary), #6366f1);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all var(--transition-speed);
+}
+
+.btn-login:hover {
+    background: linear-gradient(135deg, #4338ca, #4f46e5);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(79, 70, 229, 0.5);
+}
+
+/* فاصل "أو" */
+.divider {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin: 25px 0;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.divider::before,
+.divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.divider span {
+    font-size: 0.9rem;
+}
+
+/* زر تسجيل الدخول بحساب Google */
+.btn-google {
+    width: 100%;
+    padding: 12px;
+    background: white;
+    color: #1e293b;
+    border: none;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    font-family: var(--font-family);
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all var(--transition-speed);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.btn-google:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.btn-google img {
+    width: 22px;
+    height: 22px;
+}
+
+/* رابط إنشاء حساب */
+.signup-prompt {
+    text-align: center;
+    margin-top: 30px;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.95rem;
+}
+
+.signup-prompt a {
+    color: var(--color-secondary);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.signup-prompt a:hover {
+    text-decoration: underline;
+}
+
+/* رسائل الخطأ / النجاح */
+.alert-message {
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.alert-error {
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #fca5a5;
+}
+
+/* استجابة الشاشات الصغيرة */
+@media (max-width: 480px) {
+    .login-card {
+        padding: 35px 25px;
+    }
+    .login-title {
+        font-size: 1.5rem;
+    }
+}
