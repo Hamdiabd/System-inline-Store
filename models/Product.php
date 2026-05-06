@@ -18,6 +18,7 @@ class Product extends Model
     }
     public function save($table, $data)
     {
+    	
         if(!empty($data->name)&& !empty($data->description)&&!empty($data->image))
             {
                 $this->insert($data);

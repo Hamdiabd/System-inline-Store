@@ -21,6 +21,22 @@ class Database{
     {
         $this->stmt=$this->pdo->prepare($sql);
     }
+    public function beginTransaction()
+    {
+        $this->pdo->beginTransaction();
+    }
+    public function lastInsertId()
+    {
+        $this->pdo->lastInsertId();
+    }
+    public function commit()
+    {
+        $this->pdo->commit();
+    }
+    public function rollback()
+    {
+        $this->pdo->rollBack();
+    }
     public function execute()
     {
         return $this->stmt->execute();
