@@ -1,7 +1,6 @@
 <?php
 class Product extends Model
 {
-    #[Override]
     function __construct()
     {
         parent::__construct();
