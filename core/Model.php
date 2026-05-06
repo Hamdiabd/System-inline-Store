@@ -7,9 +7,9 @@ class Model
     {
         $this->db = new Database;
     }
-    public function getAll($table)
+    public function getAll()
     {
-        $this->db->query("SELECT * FROM {$table}");
+        $this->db->query("SELECT * FROM {$this->table}");
         return $this->db->resultSet();
     }
     public function insert($data)
@@ -17,11 +17,11 @@ class Model
         $column = implode(',', array_keys($data));
         $values = ':' . implode(', :', array_keys($data));
         $this->db->query("INSERT INTO {$this->table}($column)VALUES($values)");
-
         foreach ($data as $key => $value) {
             $this->db->bind(":$key", $value);
         }
-        return $this->db->execute();
+        $this->db->execute();
+        return $this->db->lastInsertId();
     }
     public function delete($id)
     {
@@ -29,12 +29,16 @@ class Model
         $this->db->bind(":id", $id);
         return $this->db->execute();
     }
-    public function AddFile($folder)
+    /*
+    upload image
+    */
+    public function AddFile($filedname,$folder ="Image")
     {
-        if (!isset($_FILES['file']) || $_FILES['file']['error'] !== 0) {
+        $folder =$this->table;
+        if (!isset($_FILES[$filedname]) || $_FILES[$filedname]['error'] !== 0) {
             return false;
         }
-        $file = $_FILES['file'];
+        $file = $_FILES[$filedname];
         $dir = "uploads/" . $folder . "/";
         if (!is_dir($dir)) {
             mkdir($dir, 0777, true);

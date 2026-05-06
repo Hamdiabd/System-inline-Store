@@ -32,7 +32,7 @@
                         <label>الصورة الأساسية للمنتج</label>
                         <div class="image-upload">
                             <div class="image-preview" id="baseImagePreview">🖼️</div>
-                            <input type="file" name="file" accept="image/*" onchange="previewImage(this, 'baseImagePreview')">
+                            <input type="file" name="product_image" accept="image/*" onchange="previewImage(this, 'baseImagePreview')">
                         </div>
                     </div>
 
@@ -56,7 +56,7 @@
                 <div class="form-grid" style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));">
                     <?php foreach ($data['categories'] as $category): ?>
                         <label class="checkbox-label">
-                            <input type="radio" name="categories[]" value="<?= $category->category_id ?>">
+                            <input type="checkbox" name="categories[]" value="<?= $category->category_id ?>">
                             <?= htmlspecialchars($category->name) ?>
                         </label>
                     <?php endforeach; ?>
@@ -166,7 +166,7 @@
                                 <label><span class="required">*</span> المستودع</label>
                                 <select name="inventory[0][warehouse_id]" required>
                                     <option value="">-- اختر مستودع --</option>
-                                    <?php foreach ($data['warehouses'] as $warehouse): ?>
+                                    <?php foreach ($data['warehouse'] as $warehouse): ?>
                                         <option value="<?= $warehouse->warehouse_id ?>"><?= htmlspecialchars($warehouse->name) ?></option>
                                     <?php endforeach; ?>
                                 </select>
