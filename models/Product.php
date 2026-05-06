@@ -1,39 +1,42 @@
 <?php
-class Product extends Model {
+class Product extends Model
+{
     public function getAll($table)
     {
-        
         $this->db->query("SELECT * FROM {$table}");
-                return $this->db->resultSet();
+        return $this->db->resultSet();
     }
     public function getOrder($table)
     {
         $this->db->query("SELECT * FROM {$table}");
-            $data =[
-                'order'=>$this->db->resultSet(),
-                'count' =>$this->db->rowCount()
-            ];
+        $data = [
+            'order' => $this->db->resultSet(),
+            'count' => $this->db->rowCount()
+        ];
 
-                return $data;
+        return $data;
     }
-    public function getuserName($table,$Names)
+    public function save($table, $data)
     {
-        $this->db->query("SELECT * FROM {$table} WHERE role=:Name");
-        $this->db->bind('Name',$Names);
-            return $this->db->single();
+        if(!empty($data->name)&& !empty($data->description)&&!empty($data->image))
+            {
+                $this->insert($data);
+                
+            }
+        return $this->db->single();
     }
     public function getO($table)
     {
-        
+
 
         $this->db->query("SELECT * FROM {$table}");
-                return $this->db->resultSet();
+        return $this->db->resultSet();
     }
     public function getProduct($table)
     {
-        
+
 
         $this->db->query("SELECT * FROM {$table}");
-                return $this->db->resultSet();
+        return $this->db->resultSet();
     }
 }

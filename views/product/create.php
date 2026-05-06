@@ -1,7 +1,6 @@
-
 <div class="form-wrapper">
     <form method="POST" action="<?= BASE_URL ?>product/store" enctype="multipart/form-data" novalidate>
-        
+
         <!-- ========== القسم 1: معلومات المنتج الأساسية ========== -->
         <div class="form-section">
             <div class="section-title">
@@ -33,7 +32,7 @@
                         <label>الصورة الأساسية للمنتج</label>
                         <div class="image-upload">
                             <div class="image-preview" id="baseImagePreview">🖼️</div>
-                            <input type="file" name="base_image" accept="image/*" onchange="previewImage(this, 'baseImagePreview')">
+                            <input type="file" name="file" accept="image/*" onchange="previewImage(this, 'baseImagePreview')">
                         </div>
                     </div>
 
@@ -57,7 +56,7 @@
                 <div class="form-grid" style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));">
                     <?php foreach ($data['categories'] as $category): ?>
                         <label class="checkbox-label">
-                            <input type="checkbox" name="categories[]" value="<?= $category->category_id ?>">
+                            <input type="radio" name="categories[]" value="<?= $category->category_id ?>">
                             <?= htmlspecialchars($category->name) ?>
                         </label>
                     <?php endforeach; ?>
@@ -203,88 +202,88 @@
 
 <!-- ========== JavaScript للتحكم بالعناصر المتكررة ========== -->
 <script>
-// عداد للمتغيرات
-let variantIndex = 1;
-let supplierIndex = 1;
-let inventoryIndex = 1;
+    // عداد للمتغيرات
+    let variantIndex = 1;
+    let supplierIndex = 1;
+    let inventoryIndex = 1;
 
-function addVariant() {
-    const container = document.getElementById('variantsContainer');
-    const item = document.querySelector('.variant-item').cloneNode(true);
-    // تحديث أسماء الحقول
-    item.querySelectorAll('input, select').forEach(input => {
-        const name = input.getAttribute('name');
-        if (name) {
-            input.setAttribute('name', name.replace(/\[\d+\]/, `[${variantIndex}]`));
-        }
-        if (input.tagName === 'INPUT' && input.type !== 'file') input.value = '';
-    });
-    container.appendChild(item);
-    variantIndex++;
-}
-
-function addSupplier() {
-    const container = document.getElementById('suppliersContainer');
-    const item = document.querySelector('.supplier-item').cloneNode(true);
-    item.querySelectorAll('select, input').forEach(input => {
-        const name = input.getAttribute('name');
-        if (name) {
-            input.setAttribute('name', name.replace(/\[\d+\]/, `[${supplierIndex}]`));
-        }
-        if (input.tagName === 'INPUT' && input.type !== 'file') input.value = '';
-    });
-    container.appendChild(item);
-    supplierIndex++;
-}
-
-function addInventory() {
-    const container = document.getElementById('inventoryContainer');
-    const item = document.querySelector('.inventory-item').cloneNode(true);
-    item.querySelectorAll('select, input').forEach(input => {
-        const name = input.getAttribute('name');
-        if (name) {
-            input.setAttribute('name', name.replace(/\[\d+\]/, `[${inventoryIndex}]`));
-        }
-        if (input.tagName === 'INPUT' && input.type !== 'file') input.value = '';
-    });
-    container.appendChild(item);
-    inventoryIndex++;
-}
-
-function removeItem(button) {
-    const item = button.closest('.repeat-item');
-    if (item.parentElement.children.length > 1) {
-        item.remove();
-    } else {
-        // تنبيه لطيف بدلاً من alert
-        showToast('لا يمكن حذف العنصر الوحيد');
+    function addVariant() {
+        const container = document.getElementById('variantsContainer');
+        const item = document.querySelector('.variant-item').cloneNode(true);
+        // تحديث أسماء الحقول
+        item.querySelectorAll('input, select').forEach(input => {
+            const name = input.getAttribute('name');
+            if (name) {
+                input.setAttribute('name', name.replace(/\[\d+\]/, `[${variantIndex}]`));
+            }
+            if (input.tagName === 'INPUT' && input.type !== 'file') input.value = '';
+        });
+        container.appendChild(item);
+        variantIndex++;
     }
-}
 
-// معاينة الصورة
-function previewImage(input, previewId) {
-    const preview = document.getElementById(previewId);
-    if (input.files && input.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            preview.innerHTML = `<img src="${e.target.result}" alt="معاينة">`;
-        }
-        reader.readAsDataURL(input.files[0]);
-    } else {
-        preview.innerHTML = '🖼️';
+    function addSupplier() {
+        const container = document.getElementById('suppliersContainer');
+        const item = document.querySelector('.supplier-item').cloneNode(true);
+        item.querySelectorAll('select, input').forEach(input => {
+            const name = input.getAttribute('name');
+            if (name) {
+                input.setAttribute('name', name.replace(/\[\d+\]/, `[${supplierIndex}]`));
+            }
+            if (input.tagName === 'INPUT' && input.type !== 'file') input.value = '';
+        });
+        container.appendChild(item);
+        supplierIndex++;
     }
-}
 
-// رسالة منبثقة بسيطة (اختياري)
-function showToast(msg) {
-    const toast = document.createElement('div');
-    toast.textContent = msg;
-    toast.style.cssText = 'position:fixed;bottom:20px;left:20px;background:#333;color:#fff;padding:10px 20px;border-radius:6px;z-index:9999;opacity:0;transition:opacity 0.3s;';
-    document.body.appendChild(toast);
-    setTimeout(() => toast.style.opacity = '1', 10);
-    setTimeout(() => {
-        toast.style.opacity = '0';
-        setTimeout(() => toast.remove(), 300);
-    }, 2000);
-}
+    function addInventory() {
+        const container = document.getElementById('inventoryContainer');
+        const item = document.querySelector('.inventory-item').cloneNode(true);
+        item.querySelectorAll('select, input').forEach(input => {
+            const name = input.getAttribute('name');
+            if (name) {
+                input.setAttribute('name', name.replace(/\[\d+\]/, `[${inventoryIndex}]`));
+            }
+            if (input.tagName === 'INPUT' && input.type !== 'file') input.value = '';
+        });
+        container.appendChild(item);
+        inventoryIndex++;
+    }
+
+    function removeItem(button) {
+        const item = button.closest('.repeat-item');
+        if (item.parentElement.children.length > 1) {
+            item.remove();
+        } else {
+            // تنبيه لطيف بدلاً من alert
+            showToast('لا يمكن حذف العنصر الوحيد');
+        }
+    }
+
+    // معاينة الصورة
+    function previewImage(input, previewId) {
+        const preview = document.getElementById(previewId);
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.innerHTML = `<img src="${e.target.result}" alt="معاينة">`;
+            }
+            reader.readAsDataURL(input.files[0]);
+        } else {
+            preview.innerHTML = '🖼️';
+        }
+    }
+
+    // رسالة منبثقة بسيطة (اختياري)
+    function showToast(msg) {
+        const toast = document.createElement('div');
+        toast.textContent = msg;
+        toast.style.cssText = 'position:fixed;bottom:20px;left:20px;background:#333;color:#fff;padding:10px 20px;border-radius:6px;z-index:9999;opacity:0;transition:opacity 0.3s;';
+        document.body.appendChild(toast);
+        setTimeout(() => toast.style.opacity = '1', 10);
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            setTimeout(() => toast.remove(), 300);
+        }, 2000);
+    }
 </script>
