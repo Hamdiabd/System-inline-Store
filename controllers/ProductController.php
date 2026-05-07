@@ -5,12 +5,70 @@ class ProductController extends Controller
     protected $Category;
     protected $Brand;
     protected $warehouse;
+    protected $productModel;
     function __construct()
     {
         $this->products = $this->model('Product');
         $this->warehouse = $this->model('Warehouse');
         $this->Category = $this->model('Category');
         $this->Brand = $this->model('Brand');
+        $this->productModel = $this->products;
+    }
+
+
+    public function index()
+    {
+        // استقبال معاملات الفلتر والصفحة
+        $page   = $_GET['page'] ?? 1;
+        $status = $_GET['status'] ?? '';
+        $search = $_GET['search'] ?? '';
+
+        $perPage = 10; // عدد العناصر في الصفحة
+
+        // جلب البيانات
+        $result   = $this->productModel->getProductsPaginated($page, $perPage, $status, $search);
+        $products = $result['products'];
+        $pagination = $result['pagination'];
+
+        // جلب الإحصائيات
+        $stats = $this->productModel->getProductStats();
+
+        $data = [
+            'title'       => 'إدارة المنتجات',
+            'breadcrumb'  => 'المنتجات',
+            'products'    => $products,
+            'pagination'  => $pagination,
+            'stats'       => $stats,
+            'search'      => $search,
+            'status'      => $status,
+        ];
+
+        $this->view('product/index', $data);
+    }
+
+    // دالة تبديل الحالة (تستقبل POST)
+    public function toggleStatus()
+    {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $productId = $_POST['product_id'] ?? null;
+            $status    = $_POST['is_active'] ?? 0;
+            if ($productId) {
+                $this->productModel->toggleStatus($productId, $status);
+                $_SESSION['message'] = 'تم تحديث حالة المنتج.';
+            }
+        }
+        header('Location: ' . BASE_URL . 'products?' . http_build_query($_GET));
+        exit;
+    }
+
+    public function delete($productId)
+    {
+        if ($productId) {
+            $this->productModel->deleteProduct($productId);
+            $_SESSION['message'] = 'تم حذف المنتج بنجاح.';
+        }
+        header('Location: ' . BASE_URL . 'products');
+        exit;
     }
     public function index()
     {
