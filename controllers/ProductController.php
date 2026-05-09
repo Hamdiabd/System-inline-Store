@@ -101,80 +101,83 @@ class ProductController extends Controller
 
     // حفظ منتج جديد
     public function store()
-    {
-        try {
+{
+    $this->products->db->beginTransaction();
+    
+    try {
+        // ✅ رفع الصورة الأساسية - استخدم اسم الحقل فقط
+        $file = $this->products->AddFile("product_image");
 
+        if ($_SERVER["REQUEST_METHOD"] == "POST") {
+            $data = [
+                "name"           => $_POST["product_name"],
+                "description"    => $_POST["description"] ?? null,
+                'brand_id'       => $_POST["brand_id"] ?? null,
+                "base_image_url" => $file ?: null,
+                "is_active"      => empty($_POST["is_active"]) ? 1 : 0,
+            ];
+            
+            // ✅ استخدم createProduct بدل save
+            $productId = $this->products->createProduct($data);
 
-            $file = $this->products->AddFile("product_image", "Product");
-            if ($_SERVER["REQUEST_METHOD"] == "POST") {
-                $data = [
-                    "name" => $_POST["product_name"],
-                    "description" => $_POST["description"],
-                    'brand_id' => $_POST["brand_id"] ?? null,
-                    "base_image_url" => $file,
-                    "is_active" => empty($_POST["is_active"]) ? $_POST["is_active"] : 1,
+            // ربط الأقسام
+            $categoriesId = $_POST['categories'] ?? [];
+            if (!empty($categoriesId)) {
+                $this->products->attachCategories($productId, $categoriesId);
+            }
+
+            // حفظ المتغيرات
+            $variants = $_POST['variants'] ?? [];
+            $variantsId = []; // ✅ تهيئة المصفوفة
+
+            foreach ($variants as $key => $variant) {
+                if (empty(trim($variant['sku'])) || !isset($variant['price'])) {
+                    throw new Exception("المتغير رقم " . ($key + 1) . ": SKU والسعر مطلوبان");
+                }
+
+                // ✅ رفع صورة المتغير
+                $imagevariantPath = $this->products->AddFile("variant_image_{$key}");
+
+                $variantData = [
+                    'sku'          => $variant['sku'],
+                    'size_option'  => $variant['size_option'] ?? null,
+                    'color_option' => $variant['color_option'] ?? null,
+                    'packaging'    => $variant['packaging'] ?? null,
+                    'price'        => $variant['price'],
+                    'weight_kg'    => $variant['weight_kg'] ?? null,
+                    'image_url'    => $imagevariantPath ?: null,
                 ];
-                $productId = $this->products->save("Product", $data);
-                //Add Categoryes
-                $categoriesId = $_POST['categories'] ?? [];
-                if (!empty($categoriesId)) {
-                    $this->Category->save($productId, $categoriesId);
-                }
-                /*
-            حفظ المتغيرات 
-            */
-                $variants = $_POST['variants'] ?? [];
-                foreach ($variants as $key => $variant) {
-                    if (empty(trim($variant['sku'])) || !isset($variant['price'])) {
-                        throw new Exception("  المتغير رقم" . ($key + 1) . "sku والسعر مطلوبان");
-                    }
 
-                    $imagevariantPath = false;
-                    /*
-                */
-                    if (!empty($_FILES['variants']['name'][$key]['image'])) {
-                        $tmpfile = [
-                            'name' => $_FILES['variants']['name'][$key]['image'],
-                            'type' => $_FILES['variants']['type'][$key]['image'],
-                            'tmp_name' => $_FILES['variants']['tmp_name'][$key]['image'],
-                            'error' => $_FILES['variants']['error'][$key]['image'],
-                            'size' => $_FILES['variants']['size'][$key]['image'],
-                        ];
-                        $imagevariantPath = $this->products->AddFile($tmpfile);
-                    }
-                    $variantData = [
-                        'sku' => $variant['sku'],
-                        'size_option' => $variant['size_option'],
-                        'color_option' => $variant['color_option'],
-                        'packaging' => $variant['packaging'],
-                        'image_url' => $imagevariantPath,
-                    ];
+                $variantID = $this->products->addVariant($productId, $variantData);
+                $variantsId[] = $variantID;
+            }
 
-                    $variantID = $this->products->addVariant($productId, $variantData);
+            // إضافة الموردين
+            $suppliers = $_POST['suppliers'] ?? [];
+            foreach ($suppliers as $supplier) {
+                if (empty($supplier['supplier_id']) || empty($supplier['supply_price'])) continue;
+                $this->products->attachSupplier($productId, $supplier);
+            }
 
-                    $variantsId[] = $variantID;
-                }
-                /*
-                اضافة المورديين
-                 */
-
-
-                $suppliers = $_POST['suppliers'] ?? [];
-                foreach ($suppliers as $supplier) {
-                    if (empty($supplier['supplier_id']) || empty($supplier['supply_price'])) continue;
-                    $this->products->attachSupplier($productId,$supplier);
-                }
-                
-                
-                $inventoryData = $_POST['inventory'] ?? [];
-                if (!empty($inventoryData) && !empty($variantsId));
+            // إضافة المخزون
+            $inventoryData = $_POST['inventory'] ?? [];
+            if (!empty($inventoryData) && !empty($variantsId)) { // ✅ حذفت ; الزائدة
                 $firstvariantid = $variantsId[0];
                 foreach ($inventoryData as $inv) {
                     if (empty($inv['warehouse_id'])) continue;
-                    $this->products->addInventory($firstvariantid,$inv);
+                    $this->products->addInventory($firstvariantid, $inv);
                 }
             }
-        } catch (Exception $e) {
+
+            $this->products->db->commit();
+            $_SESSION['message'] = 'تم إضافة المنتج بنجاح.';
+            header('Location: ' . BASE_URL . 'products');
+            exit;
         }
+        
+    } catch (Exception $e) {
+        $this->products->db->rollBack();
+        echo "خطأ: " . $e->getMessage();
     }
+}
 }

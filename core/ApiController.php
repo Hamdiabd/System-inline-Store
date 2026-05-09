@@ -10,7 +10,9 @@ class ApiController extends Controller
 	{
 		$page = (int)($this->get('page',1))
   }
-	
-	
-	
+  public function products-create()
+	{
+		$page = (int)($this->get('page',1))
+  }
+
 	}
