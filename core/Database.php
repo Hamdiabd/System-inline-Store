@@ -23,11 +23,11 @@ class Database{
     }
     public function beginTransaction()
     {
-        $this->pdo->beginTransaction();
+        return $this->pdo->beginTransaction();
     }
     public function lastInsertId()
     {
-        $this->pdo->lastInsertId();
+        return $this->pdo->lastInsertId();
     }
     public function commit()
     {

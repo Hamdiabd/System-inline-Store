@@ -23,7 +23,30 @@ class Controller {
     }
     protected function redirect($url)
     {
-        header( 'Location : '. BASE_URL. $url);
+        header( 'Location: '. BASE_URL. $url);
+        exit();
+        }
+        protected function get($key, $default =null)
+    {
+        return isset($_GET[$key]) ? trim($_GET[$key]) : $default;
+        }
+        protected function post($key, $default =null)
+    {
+        return isset($_POST[$key]) ? trim($_POST[$key]) : $default;
+        }
+        protected function isGet($key)
+    {
+        return $_SERVER['REQUEST_METHOD'] === 'GET';
+        }
+        protected function isPost($key)
+    {
+        return $_SERVER['REQUEST_METHOD'] === 'POST';
+        }
+        protected function json($data, $statusCode =200)
+    {
+    	http_response_code($statusCode); 
+        header('Content-Type: application/ json; charset=utf-8');
+        echo json_encode($data, JSO_UNESCAPEC_UNICODR);
         exit();
         }
 
