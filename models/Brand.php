@@ -4,6 +4,6 @@ class Brand extends Model
     function __construct()
     {
         parent::__construct();
-        $this->table ="brand";
+        $this->table = "brand";
     }
 }
