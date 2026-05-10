@@ -6,25 +6,108 @@ class Product extends Model
         parent::__construct();
         $this->table = "product";
     }
-
-    // ============================================
-    // دوال المعاملات (تحل مشكلة protected $db)
-    // ============================================
-    public function beginTransaction()
+    // دالة جلب المنتجات مع تفاصيل إضافية
+    public function getAllProductsWithDetails()
     {
-        return $this->db->beginTransaction();
+        $this->db->query("
+        SELECT 
+            p.*,
+            b.name AS brand_name,
+            MIN(pv.price) AS min_price,
+            MAX(pv.price) AS max_price,
+            SUM(inv.quantity_in_stock) AS total_stock
+        FROM product p
+        LEFT JOIN brand b ON p.brand_id = b.brand_id
+        LEFT JOIN product_variant pv ON p.product_id = pv.product_id
+        LEFT JOIN inventory inv ON pv.variant_id = inv.variant_id
+        GROUP BY p.product_id
+        ORDER BY p.created_at DESC
+    ");
+        return $this->db->resultSet();
     }
 
-    public function commit()
+    // دالة جلب منتج واحد مع كامل التفاصيل
+    public function getProductById($productId)
     {
-        return $this->db->commit();
+        // المنتج الأساسي
+        $this->db->query("
+        SELECT p.*, b.name AS brand_name 
+        FROM product p 
+        LEFT JOIN brand b ON p.brand_id = b.brand_id 
+        WHERE p.product_id = :id
+    ");
+        $this->db->bind(':id', $productId);
+        $product = $this->db->single();
+
+        if ($product) {
+            // الأقسام
+            $this->db->query("
+            SELECT c.category_id, c.name 
+            FROM product_category pc 
+            JOIN category c ON pc.category_id = c.category_id 
+            WHERE pc.product_id = :id
+        ");
+            $this->db->bind(':id', $productId);
+            $product->categories = $this->db->resultSet();
+
+            // المتغيرات
+            $this->db->query("SELECT * FROM product_variant WHERE product_id = :id");
+            $this->db->bind(':id', $productId);
+            $product->variants = $this->db->resultSet();
+
+            // الموردين
+            $this->db->query("
+            SELECT ps.*, s.company_name 
+            FROM product_supplier ps 
+            JOIN supplier s ON ps.supplier_id = s.supplier_id 
+            WHERE ps.product_id = :id
+        ");
+            $this->db->bind(':id', $productId);
+            $product->suppliers = $this->db->resultSet();
+
+            // المخزون
+            $this->db->query("
+            SELECT inv.*, w.name AS warehouse_name, pv.SKU
+            FROM inventory inv
+            JOIN warehouse w ON inv.warehouse_id = w.warehouse_id
+            JOIN product_variant pv ON inv.variant_id = pv.variant_id
+            WHERE pv.product_id = :id
+        ");
+            $this->db->bind(':id', $productId);
+            $product->inventory = $this->db->resultSet();
+
+            // صور المتغيرات
+            $this->db->query("SELECT image_url FROM product_variant WHERE product_id = :id AND image_url IS NOT NULL");
+            $this->db->bind(':id', $productId);
+            $product->variant_images = $this->db->resultSet();
+        }
+
+        return $product;
     }
 
-    public function rollBack()
+    // تحديث منتج
+    public function updateProduct($productId, $data)
     {
-        return $this->db->rollback();
-    }
+        $this->table = 'product';
 
+        $setClause = [];
+        $params = [];
+
+        foreach ($data as $key => $value) {
+            $setClause[] = "$key = :$key";
+            $params[":$key"] = $value;
+        }
+        $params[':id'] = $productId;
+
+        $sql = "UPDATE product SET " . implode(', ', $setClause) . " WHERE product_id = :id";
+        $this->db->query($sql);
+
+        foreach ($params as $key => $value) {
+            $this->db->bind($key, $value);
+        }
+
+        return $this->db->execute();
+    }
     // ============================================
     // إنشاء منتج جديد
     // ============================================
@@ -113,23 +196,5 @@ class Product extends Model
     {
         $this->db->query("SELECT * FROM product ORDER BY created_at DESC");
         return $this->db->resultSet();
-    }
-
-    // ============================================
-    // جلب منتج مع متغيراته (لحذف الصور)
-    // ============================================
-    public function getProductById($productId)
-    {
-        $this->db->query("SELECT * FROM product WHERE product_id = :id");
-        $this->db->bind(':id', $productId);
-        $product = $this->db->single();
-
-        if ($product) {
-            $this->db->query("SELECT image_url FROM product_variant WHERE product_id = :id");
-            $this->db->bind(':id', $productId);
-            $product->variant_images = $this->db->resultSet();
-        }
-
-        return $product;
     }
 }

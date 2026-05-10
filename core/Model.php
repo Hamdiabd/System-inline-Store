@@ -1,7 +1,7 @@
 <?php
 class Model
 {
-    protected $db;
+    public $db;
     protected $table;
     function __construct()
     {

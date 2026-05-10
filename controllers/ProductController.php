@@ -21,13 +21,130 @@ class ProductController extends Controller
     // ============================================
     public function index()
     {
-        $products = $this->products->getAllProducts();
+        $products = $this->products->getAllProductsWithDetails();
         $data = [
-            'title'    => 'المنتجات',
+            'title'    => 'إدارة المنتجات',
             'products' => $products,
         ];
         $this->view('product/index', $data);
     }
+
+    // ============================================
+    // عرض صفحة التعديل
+    // ============================================
+    public function edit($productId = null)
+    {
+        if (!$productId) {
+            header('Location: ' . BASE_URL . 'products');
+            exit;
+        }
+
+        $product = $this->products->getProductById($productId);
+        
+        if (!$product) {
+            $_SESSION['error'] = 'المنتج غير موجود';
+            header('Location: ' . BASE_URL . 'products');
+            exit;
+        }
+
+        $data = [
+            'title'      => 'تعديل: ' . $product->name,
+            'product'    => $product,
+            'brands'     => $this->brand->getAll(),
+            'categories' => $this->category->getAll(),
+            'suppliers'  => $this->supplier->getAll(),
+            'warehouse'  => $this->warehouse->getAll(),
+        ];
+        $this->view('product/edit', $data);
+    }
+
+    // ============================================
+    // تحديث منتج
+    // ============================================
+    public function update($productId = null)
+    {
+        if (!$productId || $_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ' . BASE_URL . 'products');
+            exit;
+        }
+
+        $this->products->db->beginTransaction();
+
+        try {
+            // تحديث المنتج الأساسي
+            $productData = [
+                'name'        => $_POST['product_name'],
+                'description' => $_POST['description'] ?? null,
+                'brand_id'    => !empty($_POST['brand_id']) ? $_POST['brand_id'] : null,
+                'is_active'   => $_POST['is_active'] ?? 1,
+            ];
+
+            // رفع صورة جديدة إن وجدت
+            $newImage = $this->products->AddFile("product_image");
+            if ($newImage) {
+                // حذف الصورة القديمة
+                $oldProduct = $this->products->getProductById($productId);
+                if (!empty($oldProduct->base_image_url) && file_exists($oldProduct->base_image_url)) {
+                    unlink($oldProduct->base_image_url);
+                }
+                $productData['base_image_url'] = $newImage;
+            }
+
+            // تحديث المنتج
+            $this->products->updateProduct($productId, $productData);
+
+            $this->products->commit();
+            $_SESSION['message'] = '✅ تم تحديث المنتج بنجاح';
+            header('Location: ' . BASE_URL . 'products');
+            exit;
+
+        } catch (Exception $e) {
+            $this->products->rollBack();
+            $_SESSION['error'] = '❌ ' . $e->getMessage();
+            header('Location: ' . BASE_URL . 'product/edit/' . $productId);
+            exit;
+        }
+    }
+
+    // ============================================
+    // حذف منتج
+    // ============================================
+    public function delete($productId = null)
+    {
+        if (!$productId) {
+            header('Location: ' . BASE_URL . 'products');
+            exit;
+        }
+
+        try {
+            // حذف الصور
+            $product = $this->products->getProductById($productId);
+            if ($product) {
+                if (!empty($product->base_image_url) && file_exists($product->base_image_url)) {
+                    unlink($product->base_image_url);
+                }
+                if (!empty($product->variant_images)) {
+                    foreach ($product->variant_images as $img) {
+                        if (!empty($img->image_url) && file_exists($img->image_url)) {
+                            unlink($img->image_url);
+                        }
+                    }
+                }
+            }
+
+            $this->products->deleteProduct($productId);
+            $_SESSION['message'] = '✅ تم حذف المنتج بنجاح';
+        } catch (Exception $e) {
+            $_SESSION['error'] = '❌ فشل الحذف: ' . $e->getMessage();
+        }
+
+        header('Location: ' . BASE_URL . 'products');
+        exit;
+    }
+
+    // ============================================
+    // عرض صفحة الإضافة
+    // ============================================
 
     // ============================================
     // عرض نموذج إضافة منتج
@@ -50,7 +167,7 @@ class ProductController extends Controller
     public function store()
     {
         // ✅ استخدام الدالة العامة
-        $this->products->beginTransaction();
+        $this->products->db->beginTransaction();
 
         try {
             if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -123,14 +240,14 @@ class ProductController extends Controller
                 }
             }
             // ✅ 8. نجاح - حفظ المعاملة
-            $this->products->commit();
+            $this->products->db->commit();
 
             $_SESSION['message'] = '✅ تم إضافة المنتج بنجاح';
             header('Location: ' . BASE_URL . 'products');
             exit;
         } catch (Exception $e) {
             // ✅ 9. فشل - تراجع
-            $this->products->rollBack();
+            $this->products->db->rollBack();
             $_SESSION['error'] = '❌ ' . $e->getMessage();
             // header('Location: ' . BASE_URL . 'product/create');
             // exit;
@@ -152,32 +269,6 @@ class ProductController extends Controller
 
         $variantsIdImagePath = $this->products->AddFile("variant_tmp");
         return $variantsIdImagePath;
-    }
-    // ============================================
-    // حذف منتج
-    // ============================================
-    public function delete($productId)
-    {
-        if ($productId) {
-            // حذف الصور
-            $product = $this->products->getProductById($productId);
-            if ($product) {
-                if (!empty($product->base_image_url) && file_exists($product->base_image_url)) {
-                    unlink($product->base_image_url);
-                }
-                if (!empty($product->variant_images)) {
-                    foreach ($product->variant_images as $img) {
-                        if (!empty($img->image_url) && file_exists($img->image_url)) {
-                            unlink($img->image_url);
-                        }
-                    }
-                }
-            }
-            $this->products->deleteProduct($productId);
-            $_SESSION['message'] = '✅ تم حذف المنتج بنجاح';
-        }
-        header('Location: ' . BASE_URL . 'products');
-        exit;
     }
 
     // ============================================
