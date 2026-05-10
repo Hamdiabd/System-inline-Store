@@ -92,6 +92,13 @@
                                 <label>الوزن (كجم)</label>
                                 <input type="number" step="0.001" name="variants[0][weight_kg]">
                             </div>
+                            <div class="field-group">
+                        <label>الصورة الأساسية للمتغير</label>
+                        <div class="image-upload">
+                            <div class="image-preview" id="baseImagePreview">🖼️</div>
+                            <input type="file" name="variants[0][image]" accept="image/*" onchange="previewImage(this, 'baseImagePreview')">
+                        </div>
+                    </div>
                         </div>
                     </div>
                 </div>

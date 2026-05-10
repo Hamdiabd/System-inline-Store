@@ -1,5 +1,5 @@
 <?php
-class ProductController
+class ProductController extends Controller
 {
     protected $products;
     protected $category;
@@ -9,11 +9,11 @@ class ProductController
 
     function __construct()
     {
-        $this->products  = new Product();
-        $this->category  = new Category();
-        $this->brand     = new Brand();
-        $this->warehouse = new Warehouse();
-        $this->supplier  = new Supplier();
+        $this->products  = $this->model("Product");
+        $this->category  = $this->model("Category");
+        $this->brand     = $this->model("Brand");
+        $this->warehouse = $this->model("Warehouse");
+        $this->supplier  = $this->model("Supplier");
     }
 
     // ============================================
@@ -54,7 +54,7 @@ class ProductController
 
         try {
             if ($_SERVER["REQUEST_METHOD"] == "POST") {
-                
+
                 // ✅ 1. رفع الصورة الأساسية
                 $baseImagePath = $this->products->AddFile("product_image");
 
@@ -63,7 +63,7 @@ class ProductController
                     "name"           => $_POST["product_name"],
                     "description"    => $_POST["description"] ?? null,
                     "brand_id"       => !empty($_POST["brand_id"]) ? $_POST["brand_id"] : null,
-                    "base_image_url" => $baseImagePath ?: null,
+                    "base_image_url" => $baseImagePath ?? null,
                     "is_active"      => $_POST["is_active"] ?? 1,
                 ];
 
@@ -83,58 +83,76 @@ class ProductController
                 }
 
                 $variantsId = [];
+                $variantsIdImagePath = "false";
+
                 foreach ($variants as $key => $variant) {
                     if (empty(trim($variant['sku'])) || !isset($variant['price'])) {
                         throw new Exception("المتغير رقم " . ($key + 1) . ": SKU والسعر مطلوبان");
                     }
 
-                    $variantData = [
-                        'sku'          => $variant['sku'],
-                        'size_option'  => $variant['size_option'] ?? null,
-                        'color_option' => $variant['color_option'] ?? null,
-                        'packaging'    => $variant['packaging'] ?? null,
-                        'price'        => $variant['price'],
-                        'weight_kg'    => $variant['weight_kg'] ?? null,
-                        'image_url'    => null,
-                    ];
-
-                    $variantID = $this->products->addVariant($productId, $variantData);
-                    $variantsId[] = $variantID;
+                    $variantsIdImagePath = $this->uploadimages($key);
                 }
+                $variantData = [
+                    'sku'          => $variant['sku'],
+                    'size_option'  => $variant['size_option'] ?? null,
+                    'color_option' => $variant['color_option'] ?? null,
+                    'packaging'    => $variant['packaging'] ?? null,
+                    'price'        => $variant['price'],
+                    'weight_kg'    => $variant['weight_kg'] ?? null,
+                    'image_url'    => $variantsIdImagePath ?? null,
+                ];
 
-                // ✅ 6. معالجة الموردين
-                $suppliers = $_POST['suppliers'] ?? [];
-                foreach ($suppliers as $supplier) {
-                    if (empty($supplier['supplier_id']) || empty($supplier['supply_price'])) continue;
-                    $this->products->attachSupplier($productId, $supplier);
-                }
-
-                // ✅ 7. المخزون الأولي
-                $inventoryData = $_POST['inventory'] ?? [];
-                if (!empty($inventoryData) && !empty($variantsId)) {
-                    $firstVariantId = $variantsId[0];
-                    foreach ($inventoryData as $inv) {
-                        if (empty($inv['warehouse_id'])) continue;
-                        $this->products->addInventory($firstVariantId, $inv);
-                    }
-                }
-
-                // ✅ 8. نجاح - حفظ المعاملة
-                $this->products->commit();
-                $_SESSION['message'] = '✅ تم إضافة المنتج بنجاح';
-                header('Location: ' . BASE_URL . 'products');
-                exit;
+                $variantID = $this->products->addVariant($productId, $variantData);
+                $variantsId[] = $variantID;
             }
-            
+
+            // ✅ 6. معالجة الموردين
+            $suppliers = $_POST['suppliers'] ?? [];
+            foreach ($suppliers as $supplier) {
+                if (empty($supplier['supplier_id']) || empty($supplier['supply_price'])) continue;
+                $this->products->attachSupplier($productId, $supplier);
+            }
+
+            // ✅ 7. المخزون الأولي
+            $inventoryData = $_POST['inventory'] ?? [];
+            if (!empty($inventoryData) && !empty($variantsId)) {
+                $firstVariantId = $variantsId[0];
+                foreach ($inventoryData as $inv) {
+                    if (empty($inv['warehouse_id'])) continue;
+                    $this->products->addInventory($firstVariantId, $inv);
+                }
+            }
+            // ✅ 8. نجاح - حفظ المعاملة
+            $this->products->commit();
+
+            $_SESSION['message'] = '✅ تم إضافة المنتج بنجاح';
+            header('Location: ' . BASE_URL . 'products');
+            exit;
         } catch (Exception $e) {
             // ✅ 9. فشل - تراجع
             $this->products->rollBack();
             $_SESSION['error'] = '❌ ' . $e->getMessage();
-            header('Location: ' . BASE_URL . 'product/create');
-            exit;
+            // header('Location: ' . BASE_URL . 'product/create');
+            // exit;
         }
     }
+    public function uploadimages($key)
+    {
+        if (empty($_FILES["variants"]['name'][$key]["image"]) || $_FILES["variants"]['error'][$key]["image"] !== 0) {
+            return null;
+        }
+        $_FILES["variant_tmp"] =
+            [
+                'name' => $_FILES["variants"]['name'][$key]["image"],
+                'type' => $_FILES["variants"]['type'][$key]["image"],
+                'tmp_name' => $_FILES["variants"]['tmp_name'][$key]["image"],
+                'error' => $_FILES["variants"]['error'][$key]["image"],
+                'size' => $_FILES["variants"]['size'][$key]["image"],
+            ];
 
+        $variantsIdImagePath = $this->products->AddFile("variant_tmp");
+        return $variantsIdImagePath;
+    }
     // ============================================
     // حذف منتج
     // ============================================
@@ -165,14 +183,4 @@ class ProductController
     // ============================================
     // دالة عرض الواجهات
     // ============================================
-    private function view($view, $data = [])
-    {
-        extract($data);
-        $viewPath = APP_PATH . 'views/' . $view . '.php';
-        if (file_exists($viewPath)) {
-            require_once $viewPath;
-        } else {
-            die("الملف $view غير موجود");
-        }
-    }
 }

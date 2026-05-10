@@ -1,6 +1,5 @@
 <?php
 require '../config/config.php';
-require '../config/configMVC.php';
 require APP_PATH . 'core/Database.php';
 require APP_PATH . 'core/Model.php';
 require APP_PATH . 'core/Controller.php';

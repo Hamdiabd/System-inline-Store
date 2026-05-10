@@ -34,19 +34,18 @@ class Model
     */
     public function AddFile($filedname,$folder ="Image")
     {
-        $folder =$this->table;
         if (!isset($_FILES[$filedname]) || $_FILES[$filedname]['error'] !== 0) {
             return false;
         }
         $file = $_FILES[$filedname];
-        $dir = "uploads/" . $folder . "/";
-        if (!is_dir($dir)) {
-            mkdir($dir, 0777, true);
+        $dir = $folder . "/";
+        if (!is_dir(BASE_URL."uploads/".$dir)) {
+            mkdir(BASE_URL."uploads/".$dir, 0777, true);
         }
         $filename = basename($file['name']);
         $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
-
-        $path = $dir . $filename;
+        $filenames = uniqid($folder).'.'.$ext;
+        $path = $dir . $filenames;
         $check = getimagesize($file['tmp_name']);
         if ($check === false) {
             return false;
@@ -54,7 +53,7 @@ class Model
         if (!in_array($ext, ['jpg', 'jpeg', 'png'])) {
             return false;
         }
-        if (file_exists($path)) {
+        if (file_exists(BASE_URL.$path)) {
             return false;
         }
         if (move_uploaded_file($file['tmp_name'], $path)) {
