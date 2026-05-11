@@ -3,7 +3,7 @@
     <ul class="sidebar-nav">
         <li><a href="<?= BASE_URL ?>" class="btn btn-sidebar active">الرئيسية</a></li>
         <li><a href="<?= BASE_URL ?>home/about" class="btn btn-sidebar">الطلبات</a></li>
-        <li><a href="<?= BASE_URL ?>product/create" class="btn btn-sidebar">المنتجات</a></li>
+        <li><a href="<?= BASE_URL ?>product/index" class="btn btn-sidebar">المنتجات</a></li>
         <li><a href="#" class="btn btn-sidebar">التقارير</a></li>
         <li><a href="#" class="btn btn-sidebar">الموارد البشرية</a></li>
         <li><a href="<?= BASE_URL ?>user" class="btn btn-sidebar">المستخدمين</a></li>

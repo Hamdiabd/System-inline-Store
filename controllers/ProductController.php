@@ -271,7 +271,4 @@ class ProductController extends Controller
         return $variantsIdImagePath;
     }
 
-    // ============================================
-    // دالة عرض الواجهات
-    // ============================================
 }

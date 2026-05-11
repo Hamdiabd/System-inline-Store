@@ -21,7 +21,7 @@ class Product extends Model
         LEFT JOIN product_variant pv ON p.product_id = pv.product_id
         LEFT JOIN inventory inv ON pv.variant_id = inv.variant_id
         GROUP BY p.product_id
-        ORDER BY p.created_at DESC
+        ORDER BY p.product_id DESC
     ");
         return $this->db->resultSet();
     }
@@ -196,5 +196,100 @@ class Product extends Model
     {
         $this->db->query("SELECT * FROM product ORDER BY created_at DESC");
         return $this->db->resultSet();
+    }
+    // في models/Product.php - أضف هذه الدوال:
+
+    // ============================================
+    // منتجات مع pagination للـ API
+    // ============================================
+    public function getProductsPaginated($page = 1, $perPage = 10, $status = '', $search = '')
+    {
+        $where = [];
+        $params = [];
+
+        if ($status !== '') {
+            $where[] = "p.is_active = :status";
+            $params[':status'] = $status;
+        }
+
+        if ($search) {
+            $where[] = "(p.name LIKE :search OR p.description LIKE :search2)";
+            $params[':search'] = "%$search%";
+            $params[':search2'] = "%$search%";
+        }
+
+        $whereClause = !empty($where) ? 'WHERE ' . implode(' AND ', $where) : '';
+
+        // العدد الكلي
+        $this->db->query("SELECT COUNT(DISTINCT p.product_id) as total FROM product p $whereClause");
+        foreach ($params as $key => $value) {
+            $this->db->bind($key, $value);
+        }
+        $total = $this->db->single()->total;
+
+        // البيانات
+        $offset = ($page - 1) * $perPage;
+        $this->db->query("
+        SELECT 
+            p.*,
+            b.name AS brand_name,
+            COUNT(DISTINCT pv.variant_id) AS variant_count,
+            MIN(pv.price) AS min_price,
+            MAX(pv.price) AS max_price,
+            SUM(inv.quantity_in_stock) AS total_stock,
+            GROUP_CONCAT(DISTINCT c.name SEPARATOR ', ') AS categories_names
+        FROM product p
+        LEFT JOIN brand b ON p.brand_id = b.brand_id
+        LEFT JOIN product_variant pv ON p.product_id = pv.product_id
+        LEFT JOIN inventory inv ON pv.variant_id = inv.variant_id
+        LEFT JOIN product_category pc ON p.product_id = pc.product_id
+        LEFT JOIN category c ON pc.category_id = c.category_id
+        $whereClause
+        GROUP BY p.product_id
+        ORDER BY p.product_id DESC
+        LIMIT $offset, $perPage
+    ");
+        foreach ($params as $key => $value) {
+            $this->db->bind($key, $value);
+        }
+
+        return [
+            'products' => $this->db->resultSet(),
+            'pagination' => [
+                'total'        => (int)$total,
+                'per_page'     => (int)$perPage,
+                'current_page' => (int)$page,
+                'total_pages'  => (int)ceil($total / $perPage)
+            ]
+        ];
+    }
+
+    // ============================================
+    // إحصائيات المنتجات
+    // ============================================
+    public function getProductStats()
+    {
+        $this->db->query("
+        SELECT 
+            COUNT(DISTINCT p.product_id) as total_products,
+            COUNT(DISTINCT CASE WHEN p.is_active = 1 THEN p.product_id END) as active_products,
+            COALESCE(SUM(inv.quantity_in_stock), 0) as total_stock,
+            COUNT(DISTINCT pv.variant_id) as total_variants
+        FROM product p
+        LEFT JOIN product_variant pv ON p.product_id = pv.product_id
+        LEFT JOIN inventory inv ON pv.variant_id = inv.variant_id
+    ");
+        return $this->db->single();
+    }
+
+    // ============================================
+    // تبديل حالة المنتج
+    // ============================================
+    public function toggleStatus($productId, $status)
+    {
+        $this->db->query("UPDATE product SET is_active = :status WHERE product_id = :id");
+        $this->db->bind(':status', $status);
+        $this->db->bind(':id', $productId);
+        return $this->db->execute();
     }
 }
